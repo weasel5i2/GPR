@@ -12,10 +12,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Radar extends JavaPlugin
 {
-	public final String pluginName = "GPR";
-	public final String pluginVersion = "1.0";
-	
-	public String mapResult = "";
+	public static String pluginName = "";
+	public static String pluginVersion = ""; 
+    public static String stoneChar = ChatColor.DARK_GRAY + "/";
+	public static String mapResult = "";
 
 	@Override
 	public void onDisable() 
@@ -27,6 +27,9 @@ public class Radar extends JavaPlugin
 	@Override
 	public void onEnable() 
 	{
+		pluginName = getDescription().getName();
+		pluginVersion = getDescription().getVersion();
+		
         // PluginManager manager = getServer().getPluginManager();
 		logOutput( "Ground Penetrating Radar is enabled." );
 		
@@ -53,7 +56,7 @@ public class Radar extends JavaPlugin
 	    				return true;
 	    			}
 	    			
-	    			doRadarScan( player, aInt, 15 );
+	    			doRadarScan( player, aInt, 12 );
 	    			return true;
 	    		}
 	    	}
@@ -99,9 +102,8 @@ public class Radar extends JavaPlugin
 		double tbY = 0;
 		double maxDepth = 0;
         String fChar = "";
-        double facing = 0;
-		
-        who.sendMessage( ChatColor.BLUE + "GPR: " + ChatColor.WHITE + "scanning.. " 
+
+        who.sendMessage( ChatColor.BLUE + "[GPR] "
         + ChatColor.GRAY + "0+ " 
         + ChatColor.DARK_AQUA + "10+ " 
         + ChatColor.DARK_BLUE + "20+ " 
@@ -109,7 +111,7 @@ public class Radar extends JavaPlugin
         + ChatColor.GOLD + "40+ " 
         + ChatColor.DARK_RED + "50+ " );
         
-        who.sendMessage( ChatColor.DARK_GRAY + "===============================" );
+        who.sendMessage( ChatColor.DARK_GRAY + "=========================" );
         
 		mapResult = "" + ChatColor.GRAY;
 
@@ -143,19 +145,18 @@ public class Radar extends JavaPlugin
 				
 				if( Math.round(X) == Math.round(pX) && Math.round(Z) == Math.round(pZ) )
 				{
-					facing = Math.round( Math.abs( who.getLocation().getYaw() ) );
+					float yaw = who.getLocation().getYaw();
+					if( yaw < 0 ) yaw += 360;
+					if( yaw > 360 ) yaw -= 360;
 					
-					while( facing > 360 ) facing -= 360;
-					while( facing < 0 ) facing += 360;
-						
-						 if( facing < 90 )
-						fChar = ">";
-					else if( facing < 180 )
-						fChar = "V";
-					else if( facing < 270 )
+					if( yaw <= 25 )
 						fChar = "<";
-					else
+					else if( yaw <= 115 )
 						fChar = "^";
+					else if( yaw <= 205 )
+						fChar = ">";
+					else
+						fChar = "V";
 					
 					mapResult += ChatColor.AQUA + fChar + ChatColor.GRAY;
 				}
@@ -164,9 +165,12 @@ public class Radar extends JavaPlugin
 					if( foundAir == true )
 						mapResult += getDepthChar( Math.abs(tbY-foundAt) );
 					else
-						mapResult += ChatColor.GRAY + " . ";
+						mapResult += ChatColor.GRAY + stoneChar;
 				}
 			}
+			
+			if( mapResult.length() > 120 ) mapResult = mapResult.substring(0, 119);
+			
 			who.sendMessage( mapResult );
 			mapResult = "" + ChatColor.GRAY;
 		}
@@ -193,7 +197,7 @@ public class Radar extends JavaPlugin
 		if( depth > 0 )
 			return retVal;
 		else
-			return( " . " );
+			return( stoneChar );
 	}
 
     public static Block getTopBlock( World world, double X, double Z )
