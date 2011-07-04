@@ -1,6 +1,7 @@
 name: GPR
 main: net.weasel.GPR.Radar
-version: 1.3
+author: weasel5i2
+version: 1.31
 commands:
   gpr:
     description: GPR - Ground Penetrating Radar
